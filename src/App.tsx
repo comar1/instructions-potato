@@ -1,34 +1,84 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
+import { useEffect, useState } from 'react'
+import  axios  from 'axios'
 import './App.css'
+
+interface UserName {
+  first: string;
+  last: string;
+  title: string;
+}
+
+interface UserPicture {
+  thumbnail: string;
+}
+
+interface UserInfo {
+  name: UserName;
+  picture: UserPicture;
+}
+
+const fetchRandomdata = (): Promise<any> => {
+  return axios.get('https://randomuser.me/api')
+    .then(res => {
+      //handle successful
+      console.log(res);
+      return res;
+    })
+    .catch((err) => {
+      //handle error
+      console.log("error");
+    })
+}
+
+const getFullUserName = (userInfo: UserInfo) => {
+  const {name: {first, last}} = userInfo;
+  return `${first} ${last}`;
+} 
 
 function App() {
   const [count, setCount] = useState(0)
+  const [userInfo, setUserInfo] = useState<any>([])
+  const [randomUserData, setrandomUserData] = useState('');
+
+  useEffect(() => {
+    fetchRandomdata().then(randomData => {
+      setrandomUserData(JSON.stringify(randomData, null, 2) || 'No user data found');
+      setUserInfo(randomData.results);
+    })
+  }, []);
 
   return (
-    <div className="App">
+    <div>
+      <h1>Hello World!</h1>
+      <p>{count}</p>
+      <button onClick={() => {
+        setCount(count + 1);
+      }}>Increase Count</button>
+    
+      {/* {
+        userInfo?.map((userInfo: UserInfo, idx: number) => (
+
+          <div key={idx}>
+            <p>{userInfo.name.first} {userInfo.name.last} </p>
+            <img src={userInfo.picture.thumbnail}></img>
+          </div>
+
+        ))
+      } */}
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <p>{userInfo}</p>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      <div>
+        <button onClick={() => {
+          fetchRandomdata();
+        }}>fetchRandomdata</button> 
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <div>
+        <pre style={{color:"red"}}>{randomUserData}</pre>
+      </div>
     </div>
   )
+
 }
 
 export default App
